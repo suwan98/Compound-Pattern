@@ -25,4 +25,43 @@
 <br />
 <br />
 
-### 0. 폴더 구조 구성하기
+### 0. 폴더 구조 구성 / 기본 컴포넌트 생성
+
+- 폴더구조는 components/Accordian 폴더 내부에서 아코디언 컴포넌트 관련로직을 전부 관리한다.
+- 기본 구성을 위한 래퍼컴포넌트가 될 Accordian 래퍼 컴포넌트의 아이템이 될 AccordianItem 컴포넌트를 생성한다.
+  - 해당 컴포넌트들은 내부의 자원들을 유동적으로 받을 수 있도록 `children` 프로퍼티를 추가했다.
+- 이후 `App.jsx`에서 만든 아코디언 컴포넌트를 렌더하게되는데, 해당 컴포넌트와 함께 더 많은 아코디언 컴포넌트를 만들어 그 컴포넌들을 내부에서 출력해야하는게 목표이다.
+
+```jsx
+
+/* 📑 components/Accordian/Accordian.jsx */
+
+function Accordian({children, className}) {
+  return (
+    <>
+      <ul className={className}>{children}</ul>
+    </>
+  );
+}
+
+export default Accordian;
+
+
+/* 📑 components/Accordian/AccordianItem.jsx */
+
+function AccoridianItem({className, title, children}) {
+  return (
+    <li className={className}>
+      <h3>{title}</h3>
+      <div>{children}</div>
+    </li>
+  );
+}
+
+export default AccoridianItem;
+
+
+```
+
+<br />
+<br />
