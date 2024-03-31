@@ -211,3 +211,75 @@ export default AccoridianItem;
 
 <br />
 <br />
+
+### 2. Accordian컴포넌트와 AccordianItem 컴포넌트 하나의 아코디언 컴포넌트 파일 내부에서 관리하기
+
+**합성컴포넌트 패턴에서 가장 일반적인 패턴은 모든 컴포넌트 식별자를 하나의 객체로 합친다.**
+
+- 아래처럼 `Accordian.Item = AccoridianItem`로 내보내게되면, `item`이라는 프로퍼티로 `AccoridianItem`에 접근할 수 있게 된다.
+
+```jsx
+function Accordian({children, className}) {
+  const [openItemId, setOpenItemId] = useState(null);
+
+  const openItem = (id) => {
+    setOpenItemId(id);
+  };
+
+  const closeItem = () => {
+    setOpenItemId(null);
+  };
+
+  const accoridainContextValue = {
+    openItem,
+    closeItem,
+    openItemId,
+  };
+
+  return (
+    <AccordianContext.Provider value={accoridainContextValue}>
+      <ul className={className}>{children}</ul>
+    </AccordianContext.Provider>
+  );
+}
+
+Accordian.Item = AccoridianItem;
+
+export default Accordian;
+```
+
+<br />
+
+- 이제 더이상 최종적으로 렌더하고 있는 `App.jsx`에서도 `AccordianItem` 컴포넌트를 `import`해올 필요없이 `Accordian.Item`으로 참조해 아코디언 아이템 컴포넌트를 렌더할 수 있게 된다.
+
+```jsx
+import Accordian from "./components/Accordian/Accordian";
+import Lorem from "./components/Lorem";
+
+function App() {
+  return (
+    <main>
+      <section>
+        <Accordian className="accordion">
+          <Accordian.Item
+            className="accordion-item"
+            title="아코디언 1"
+            id="accordian-1">
+            <Lorem />
+          </Accordian.Item>
+        </Accordian>
+        <Accordian className="accordion">
+          <Accordian.Item
+            className="accordion-item"
+            title="아코디언 2"
+            id="accordian-2">
+            <Lorem />
+          </Accordian.Item>
+        </Accordian>
+      </section>
+    </main>
+  );
+}
+
+export default App;
+```
