@@ -65,3 +65,149 @@ export default AccoridianItem;
 
 <br />
 <br />
+
+### 1. Context API로 멀티 컴포넌트 상태 관리하기
+
+**기본 컴포넌트 구성시 생긴 문제점이 존재한다**
+
+- `children` props는 쉽게 상호작용하기 어렵다는 점.
+  - 컴포넌트 내부에서 렌더하는게 아닌 그냥 전달만하는 props이기 때문에.
+
+**createContext로 Context 생성하기**
+
+- `React.createContext`는 Context 객체를 만들고 해당 객체를 통해 `Provider`와 `Consumer`를 사용할 수 있다.
+- `createContext`로 `Accoridain` 컴포넌트에 대한 Context를 생성한다.
+
+```jsx
+/* 📑 components/Accordian/Accordian.jsx */
+
+import {createContext} from "react";
+
+const AccordianContext = createContext();
+
+function Accordian({children, className}) {
+  return (
+    <>
+      <ul className={className}>{children}</ul>
+    </>
+  );
+}
+
+export default Accordian;
+```
+
+<br />
+
+- 생성한 Context객체를 기존 `ul`태그를 리턴하는 대신 `AccordianContext.Provider`를 래핑해 리턴한다.
+
+```jsx
+/* 📑 components/Accordian/Accordian.jsx */
+
+import {createContext} from "react";
+
+const AccordianContext = createContext();
+
+function Accordian({children, className}) {
+  return (
+    <AccordianContext.Provider>
+      <ul className={className}>{children}</ul>
+    </AccordianContext.Provider>
+  );
+}
+
+export default Accordian;
+```
+
+<br />
+
+- Provider는 필수적으로 `value`를 필요로 한다
+- 아코디언을 열고/닫는 로직과 아코디언 컴포넌트의 열고 닫힌 상태를 판별하게 될 상태인 `openItemId`를 value로 할당한다.
+
+```jsx
+/* 📑 components/Accordian/Accordian.jsx */
+
+import {useState} from "react";
+import {createContext} from "react";
+
+const AccordianContext = createContext();
+
+function Accordian({children, className}) {
+  const [openItemId, setOpenItemId] = useState(null);
+
+  const openItem = (id) => {
+    setOpenItemId(id);
+  };
+
+  const closeItem = () => {
+    setOpenItemId(null);
+  };
+
+  const accoridainContextValue = {
+    openItem,
+    closeItem,
+    openItemId,
+  };
+
+  return (
+    <AccordianContext.Provider value={accoridainContextValue}>
+      <ul className={className}>{children}</ul>
+    </AccordianContext.Provider>
+  );
+}
+
+export default Accordian;
+```
+
+<br />
+
+- Accordian의 Context를 쉽게 접근하기 위해 `useAccordionContext`라는 커스텀훅을 생성해 관리한다.
+
+```js
+export function useAccordianContext() {
+  const context = useContext(AccordianContext);
+
+  if (!context) {
+    throw new Error(
+      "아코디언 컴포넌트 사용시 반드시 Accordian 컴포넌트 내부에 래핑해야합니다."
+    );
+  }
+
+  return context;
+}
+```
+
+<br />
+
+- 이제 `AccoridianItem` 컴포넌트 내부에서도 Accordian의 Context를 사용할 수 있게된다.
+  - `AccoridianItem` 컴포넌트에 `id` `props`를 추가해 `useAccordianContext`로 가져오는 `openItemId`와 `id`를 비교하는 `isOpen`이라는 파생상태를 추가한다.
+- 추가로 가져온 `openItem`과 `closeItem` 함수를 이벤트핸들러에 바인딩한다.
+
+```jsx
+import {useAccordianContext} from "./Accordian";
+
+function AccoridianItem({id, className, title, children}) {
+  const {openItemId, openItem, closeItem} = useAccordianContext();
+
+  const isOpen = openItemId === id;
+
+  const handleToggleAccoridian = () => {
+    if (isOpen) {
+      closeItem();
+    } else {
+      openItem(id);
+    }
+  };
+
+  return (
+    <li className={className}>
+      <h3 onClick={handleToggleAccoridian}>{title}</h3>
+      <div className={isOpen ? "oepn" : "close"}>{children}</div>
+    </li>
+  );
+}
+
+export default AccoridianItem;
+```
+
+<br />
+<br />
